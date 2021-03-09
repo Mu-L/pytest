@@ -2,7 +2,7 @@
 
 .. sidebar:: Next Open Trainings
 
-   - `Professional testing with Python <https://www.python-academy.com/courses/specialtopics/python_course_testing.html>`_, via Python Academy, February 1-3 2021, Leipzig (Germany) and remote.
+   - `Professionelles Testen für Python mit pytest <https://www.enterpy.de/lecture_compact1.php?id=12713>`_ (German), part of the enterPy conference, April 22nd, remote.
 
    Also see `previous talks and blogposts <talks.html>`_.
 
@@ -11,6 +11,7 @@
 pytest: helps you write better programs
 =======================================
 
+.. module:: pytest
 
 The ``pytest`` framework makes it easy to write small tests, yet
 scales to support complex functional testing for applications and libraries.
@@ -71,7 +72,7 @@ Features
 
 - Python 3.6+ and PyPy 3
 
-- Rich plugin architecture, with over 315+ `external plugins <http://plugincompat.herokuapp.com>`_ and thriving community
+- Rich plugin architecture, with over 800+ :doc:`external plugins <plugin_list>` and thriving community
 
 
 Documentation

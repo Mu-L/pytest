@@ -11,7 +11,6 @@ from typing import Tuple
 from typing import TYPE_CHECKING
 from typing import Union
 
-import py.path
 from pluggy import HookspecMarker
 
 from _pytest.deprecated import WARNING_CAPTURED_HOOK
@@ -42,6 +41,7 @@ if TYPE_CHECKING:
     from _pytest.reports import TestReport
     from _pytest.runner import CallInfo
     from _pytest.terminal import TerminalReporter
+    from _pytest.compat import LEGACY_PATH
 
 
 hookspec = HookspecMarker("pytest")
@@ -263,7 +263,7 @@ def pytest_collection_finish(session: "Session") -> None:
 
 @hookspec(firstresult=True)
 def pytest_ignore_collect(
-    fspath: Path, path: py.path.local, config: "Config"
+    fspath: Path, path: "LEGACY_PATH", config: "Config"
 ) -> Optional[bool]:
     """Return True to prevent considering this path for collection.
 
@@ -273,7 +273,7 @@ def pytest_ignore_collect(
     Stops at first non-None result, see :ref:`firstresult`.
 
     :param pathlib.Path fspath: The path to analyze.
-    :param py.path.local path: The path to analyze.
+    :param LEGACY_PATH path: The path to analyze.
     :param _pytest.config.Config config: The pytest config object.
 
     .. versionchanged:: 6.3.0
@@ -283,14 +283,14 @@ def pytest_ignore_collect(
 
 
 def pytest_collect_file(
-    fspath: Path, path: py.path.local, parent: "Collector"
+    fspath: Path, path: "LEGACY_PATH", parent: "Collector"
 ) -> "Optional[Collector]":
     """Create a Collector for the given path, or None if not relevant.
 
     The new node needs to have the specified ``parent`` as a parent.
 
     :param pathlib.Path fspath: The path to analyze.
-    :param py.path.local path: The path to collect.
+    :param LEGACY_PATH path: The path to collect.
 
     .. versionchanged:: 6.3.0
         The ``fspath`` parameter was added as a :class:`pathlib.Path`
@@ -335,7 +335,7 @@ def pytest_make_collect_report(collector: "Collector") -> "Optional[CollectRepor
 
 @hookspec(firstresult=True)
 def pytest_pycollect_makemodule(
-    fspath: Path, path: py.path.local, parent
+    fspath: Path, path: "LEGACY_PATH", parent
 ) -> Optional["Module"]:
     """Return a Module collector or None for the given path.
 
@@ -346,7 +346,7 @@ def pytest_pycollect_makemodule(
     Stops at first non-None result, see :ref:`firstresult`.
 
     :param pathlib.Path fspath: The path of the module to collect.
-    :param py.path.local path: The path of the module to collect.
+    :param legacy_path path: The path of the module to collect.
 
     .. versionchanged:: 6.3.0
         The ``fspath`` parameter was added as a :class:`pathlib.Path`
@@ -509,9 +509,9 @@ def pytest_runtest_teardown(item: "Item", nextitem: Optional["Item"]) -> None:
 
     :param nextitem:
         The scheduled-to-be-next test item (None if no further test item is
-        scheduled). This argument can be used to perform exact teardowns,
-        i.e. calling just enough finalizers so that nextitem only needs to
-        call setup-functions.
+        scheduled). This argument is used to perform exact teardowns, i.e.
+        calling just enough finalizers so that nextitem only needs to call
+        setup functions.
     """
 
 
@@ -540,7 +540,8 @@ def pytest_runtest_logreport(report: "TestReport") -> None:
 
 @hookspec(firstresult=True)
 def pytest_report_to_serializable(
-    config: "Config", report: Union["CollectReport", "TestReport"],
+    config: "Config",
+    report: Union["CollectReport", "TestReport"],
 ) -> Optional[Dict[str, Any]]:
     """Serialize the given report object into a data structure suitable for
     sending over the wire, e.g. converted to JSON."""
@@ -548,7 +549,8 @@ def pytest_report_to_serializable(
 
 @hookspec(firstresult=True)
 def pytest_report_from_serializable(
-    config: "Config", data: Dict[str, Any],
+    config: "Config",
+    data: Dict[str, Any],
 ) -> Optional[Union["CollectReport", "TestReport"]]:
     """Restore a report object previously serialized with pytest_report_to_serializable()."""
 
@@ -597,7 +599,8 @@ def pytest_sessionstart(session: "Session") -> None:
 
 
 def pytest_sessionfinish(
-    session: "Session", exitstatus: Union[int, "ExitCode"],
+    session: "Session",
+    exitstatus: Union[int, "ExitCode"],
 ) -> None:
     """Called after whole test run finished, right before returning the exit status to the system.
 
@@ -673,13 +676,13 @@ def pytest_assertion_pass(item: "Item", lineno: int, orig: str, expl: str) -> No
 
 
 def pytest_report_header(
-    config: "Config", startpath: Path, startdir: py.path.local
+    config: "Config", startpath: Path, startdir: "LEGACY_PATH"
 ) -> Union[str, List[str]]:
     """Return a string or list of strings to be displayed as header info for terminal reporting.
 
     :param _pytest.config.Config config: The pytest config object.
     :param Path startpath: The starting dir.
-    :param py.path.local startdir: The starting dir.
+    :param LEGACY_PATH startdir: The starting dir.
 
     .. note::
 
@@ -701,7 +704,10 @@ def pytest_report_header(
 
 
 def pytest_report_collectionfinish(
-    config: "Config", startpath: Path, startdir: py.path.local, items: Sequence["Item"],
+    config: "Config",
+    startpath: Path,
+    startdir: "LEGACY_PATH",
+    items: Sequence["Item"],
 ) -> Union[str, List[str]]:
     """Return a string or list of strings to be displayed after collection
     has finished successfully.
@@ -712,7 +718,7 @@ def pytest_report_collectionfinish(
 
     :param _pytest.config.Config config: The pytest config object.
     :param Path startpath: The starting path.
-    :param py.path.local startdir: The starting dir.
+    :param LEGACY_PATH startdir: The starting dir.
     :param items: List of pytest items that are going to be executed; this list should not be modified.
 
     .. note::
@@ -731,9 +737,7 @@ def pytest_report_collectionfinish(
 @hookspec(firstresult=True)
 def pytest_report_teststatus(
     report: Union["CollectReport", "TestReport"], config: "Config"
-) -> Tuple[
-    str, str, Union[str, Mapping[str, bool]],
-]:
+) -> Tuple[str, str, Union[str, Mapping[str, bool]]]:
     """Return result-category, shortletter and verbose word for status
     reporting.
 
@@ -758,7 +762,9 @@ def pytest_report_teststatus(
 
 
 def pytest_terminal_summary(
-    terminalreporter: "TerminalReporter", exitstatus: "ExitCode", config: "Config",
+    terminalreporter: "TerminalReporter",
+    exitstatus: "ExitCode",
+    config: "Config",
 ) -> None:
     """Add a section to terminal summary reporting.
 
@@ -865,7 +871,8 @@ def pytest_markeval_namespace(config: "Config") -> Dict[str, Any]:
 
 
 def pytest_internalerror(
-    excrepr: "ExceptionRepr", excinfo: "ExceptionInfo[BaseException]",
+    excrepr: "ExceptionRepr",
+    excinfo: "ExceptionInfo[BaseException]",
 ) -> Optional[bool]:
     """Called for internal errors.
 

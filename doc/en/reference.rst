@@ -138,7 +138,7 @@ pytest.mark.parametrize
 
 **Tutorial**: :doc:`parametrize`.
 
-This mark has the same signature as :py:meth:`_pytest.python.Metafunc.parametrize`; see there.
+This mark has the same signature as :py:meth:`pytest.Metafunc.parametrize`; see there.
 
 
 .. _`pytest.mark.skip ref`:
@@ -150,7 +150,7 @@ pytest.mark.skip
 
 Unconditionally skip a test function.
 
-.. py:function:: pytest.mark.skip(*, reason=None)
+.. py:function:: pytest.mark.skip(reason=None)
 
     :keyword str reason: Reason why the test function is being skipped.
 
@@ -239,7 +239,7 @@ For example:
     def test_function():
         ...
 
-Will create and attach a :class:`Mark <_pytest.mark.structures.Mark>` object to the collected
+Will create and attach a :class:`Mark <pytest.Mark>` object to the collected
 :class:`Item <pytest.Item>`, which can then be accessed by fixtures or hooks with
 :meth:`Node.iter_markers <_pytest.nodes.Node.iter_markers>`. The ``mark`` object will have the following attributes:
 
@@ -758,7 +758,7 @@ Full reference to objects accessible from :ref:`fixtures <fixture>` or :ref:`hoo
 CallInfo
 ~~~~~~~~
 
-.. autoclass:: _pytest.runner.CallInfo()
+.. autoclass:: pytest.CallInfo()
     :members:
 
 
@@ -849,28 +849,28 @@ Item
 MarkDecorator
 ~~~~~~~~~~~~~
 
-.. autoclass:: _pytest.mark.MarkDecorator
+.. autoclass:: pytest.MarkDecorator()
     :members:
 
 
 MarkGenerator
 ~~~~~~~~~~~~~
 
-.. autoclass:: _pytest.mark.MarkGenerator
+.. autoclass:: pytest.MarkGenerator()
     :members:
 
 
 Mark
 ~~~~
 
-.. autoclass:: _pytest.mark.structures.Mark
+.. autoclass:: pytest.Mark()
     :members:
 
 
 Metafunc
 ~~~~~~~~
 
-.. autoclass:: _pytest.python.Metafunc
+.. autoclass:: pytest.Metafunc()
     :members:
 
 Module

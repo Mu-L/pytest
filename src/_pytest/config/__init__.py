@@ -32,7 +32,6 @@ from typing import TYPE_CHECKING
 from typing import Union
 
 import attr
-import py
 from pluggy import HookimplMarker
 from pluggy import HookspecMarker
 from pluggy import PluginManager
@@ -48,6 +47,8 @@ from _pytest._code import filter_traceback
 from _pytest._io import TerminalWriter
 from _pytest.compat import final
 from _pytest.compat import importlib_metadata
+from _pytest.compat import LEGACY_PATH
+from _pytest.compat import legacy_path
 from _pytest.outcomes import fail
 from _pytest.outcomes import Skipped
 from _pytest.pathlib import absolutepath
@@ -104,7 +105,9 @@ class ExitCode(enum.IntEnum):
 
 class ConftestImportFailure(Exception):
     def __init__(
-        self, path: Path, excinfo: Tuple[Type[Exception], Exception, TracebackType],
+        self,
+        path: Path,
+        excinfo: Tuple[Type[Exception], Exception, TracebackType],
     ) -> None:
         super().__init__(path, excinfo)
         self.path = path
@@ -128,7 +131,7 @@ def filter_traceback_for_conftest_import_failure(
 
 
 def main(
-    args: Optional[Union[List[str], py.path.local]] = None,
+    args: Optional[Union[List[str], "os.PathLike[str]"]] = None,
     plugins: Optional[Sequence[Union[str, _PluggyPlugin]]] = None,
 ) -> Union[int, ExitCode]:
     """Perform an in-process test run.
@@ -269,7 +272,9 @@ def get_config(
     config = Config(
         pluginmanager,
         invocation_params=Config.InvocationParams(
-            args=args or (), plugins=plugins, dir=Path.cwd(),
+            args=args or (),
+            plugins=plugins,
+            dir=Path.cwd(),
         ),
     )
 
@@ -295,13 +300,15 @@ def get_plugin_manager() -> "PytestPluginManager":
 
 
 def _prepareconfig(
-    args: Optional[Union[py.path.local, List[str]]] = None,
+    args: Optional[Union[List[str], "os.PathLike[str]"]] = None,
     plugins: Optional[Sequence[Union[str, _PluggyPlugin]]] = None,
 ) -> "Config":
     if args is None:
         args = sys.argv[1:]
-    elif isinstance(args, py.path.local):
-        args = [str(args)]
+    # TODO: Remove type-ignore after next mypy release.
+    # https://github.com/python/typeshed/commit/076983eec45e739c68551cb6119fd7d85fd4afa9
+    elif isinstance(args, os.PathLike):  # type: ignore[misc]
+        args = [os.fspath(args)]
     elif not isinstance(args, list):
         msg = "`args` parameter expected to be a list of strings, got: {!r} (type: {})"
         raise TypeError(msg.format(args, type(args)))
@@ -346,7 +353,7 @@ class PytestPluginManager(PluginManager):
         self._conftestpath2mod: Dict[Path, types.ModuleType] = {}
         self._confcutdir: Optional[Path] = None
         self._noconftest = False
-        self._duplicatepaths: Set[py.path.local] = set()
+        self._duplicatepaths: Set[Path] = set()
 
         # plugins that were explicitly skipped with pytest.skip
         # list of (module name, skip reason)
@@ -362,7 +369,10 @@ class PytestPluginManager(PluginManager):
             encoding: str = getattr(err, "encoding", "utf8")
             try:
                 err = open(
-                    os.dup(err.fileno()), mode=err.mode, buffering=1, encoding=encoding,
+                    os.dup(err.fileno()),
+                    mode=err.mode,
+                    buffering=1,
+                    encoding=encoding,
                 )
             except Exception:
                 pass
@@ -514,7 +524,9 @@ class PytestPluginManager(PluginManager):
 
     @lru_cache(maxsize=128)
     def _getconftestmodules(
-        self, path: Path, importmode: Union[str, ImportMode],
+        self,
+        path: Path,
+        importmode: Union[str, ImportMode],
     ) -> List[types.ModuleType]:
         if self._noconftest:
             return []
@@ -539,7 +551,10 @@ class PytestPluginManager(PluginManager):
         return clist
 
     def _rget_with_confmod(
-        self, name: str, path: Path, importmode: Union[str, ImportMode],
+        self,
+        name: str,
+        path: Path,
+        importmode: Union[str, ImportMode],
     ) -> Tuple[types.ModuleType, Any]:
         modules = self._getconftestmodules(path, importmode)
         for mod in reversed(modules):
@@ -550,7 +565,9 @@ class PytestPluginManager(PluginManager):
         raise KeyError(name)
 
     def _importconftest(
-        self, conftestpath: Path, importmode: Union[str, ImportMode],
+        self,
+        conftestpath: Path,
+        importmode: Union[str, ImportMode],
     ) -> types.ModuleType:
         # Use a resolved Path object as key to avoid loading the same conftest
         # twice with build systems that create build directories containing
@@ -588,7 +605,9 @@ class PytestPluginManager(PluginManager):
         return mod
 
     def _check_non_top_pytest_plugins(
-        self, mod: types.ModuleType, conftestpath: Path,
+        self,
+        mod: types.ModuleType,
+        conftestpath: Path,
     ) -> None:
         if (
             hasattr(mod, "pytest_plugins")
@@ -919,15 +938,15 @@ class Config:
             self.cache: Optional[Cache] = None
 
     @property
-    def invocation_dir(self) -> py.path.local:
+    def invocation_dir(self) -> LEGACY_PATH:
         """The directory from which pytest was invoked.
 
         Prefer to use :attr:`invocation_params.dir <InvocationParams.dir>`,
         which is a :class:`pathlib.Path`.
 
-        :type: py.path.local
+        :type: LEGACY_PATH
         """
-        return py.path.local(str(self.invocation_params.dir))
+        return legacy_path(str(self.invocation_params.dir))
 
     @property
     def rootpath(self) -> Path:
@@ -940,14 +959,14 @@ class Config:
         return self._rootpath
 
     @property
-    def rootdir(self) -> py.path.local:
+    def rootdir(self) -> LEGACY_PATH:
         """The path to the :ref:`rootdir <rootdir>`.
 
         Prefer to use :attr:`rootpath`, which is a :class:`pathlib.Path`.
 
-        :type: py.path.local
+        :type: LEGACY_PATH
         """
-        return py.path.local(str(self.rootpath))
+        return legacy_path(str(self.rootpath))
 
     @property
     def inipath(self) -> Optional[Path]:
@@ -960,14 +979,14 @@ class Config:
         return self._inipath
 
     @property
-    def inifile(self) -> Optional[py.path.local]:
+    def inifile(self) -> Optional[LEGACY_PATH]:
         """The path to the :ref:`configfile <configfiles>`.
 
         Prefer to use :attr:`inipath`, which is a :class:`pathlib.Path`.
 
-        :type: Optional[py.path.local]
+        :type: Optional[LEGACY_PATH]
         """
-        return py.path.local(str(self.inipath)) if self.inipath else None
+        return legacy_path(str(self.inipath)) if self.inipath else None
 
     def add_cleanup(self, func: Callable[[], None]) -> None:
         """Add a function to be called when the config object gets out of
@@ -1225,7 +1244,11 @@ class Config:
             if Version(minver) > Version(pytest.__version__):
                 raise pytest.UsageError(
                     "%s: 'minversion' requires pytest-%s, actual pytest-%s'"
-                    % (self.inipath, minver, pytest.__version__,)
+                    % (
+                        self.inipath,
+                        minver,
+                        pytest.__version__,
+                    )
                 )
 
     def _validate_config_options(self) -> None:
@@ -1398,7 +1421,7 @@ class Config:
             assert self.inipath is not None
             dp = self.inipath.parent
             input_values = shlex.split(value) if isinstance(value, str) else value
-            return [py.path.local(str(dp / x)) for x in input_values]
+            return [legacy_path(str(dp / x)) for x in input_values]
         elif type == "args":
             return shlex.split(value) if isinstance(value, str) else value
         elif type == "linelist":
@@ -1424,7 +1447,7 @@ class Config:
         for relroot in relroots:
             if isinstance(relroot, Path):
                 pass
-            elif isinstance(relroot, py.path.local):
+            elif isinstance(relroot, LEGACY_PATH):
                 relroot = Path(relroot)
             else:
                 relroot = relroot.replace("/", os.sep)
@@ -1500,7 +1523,8 @@ class Config:
                     "(are you using python -O?)\n"
                 )
             self.issue_config_time_warning(
-                PytestConfigWarning(warning_text), stacklevel=3,
+                PytestConfigWarning(warning_text),
+                stacklevel=3,
             )
 
     def _warn_about_skipped_plugins(self) -> None:

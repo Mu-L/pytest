@@ -47,7 +47,7 @@ class TestMetafunc:
         names = getfuncargnames(func)
         fixtureinfo: Any = FuncFixtureInfoMock(names)
         definition: Any = DefinitionMock._create(func, "mock::nodeid")
-        return python.Metafunc(definition, fixtureinfo, config)
+        return python.Metafunc(definition, fixtureinfo, config, _ispytest=True)
 
     def test_no_funcargs(self) -> None:
         def function():
@@ -514,7 +514,10 @@ class TestMetafunc:
         ]
         for config, expected in values:
             result = idmaker(
-                ("a",), [pytest.param("string")], idfn=lambda _: "ação", config=config,
+                ("a",),
+                [pytest.param("string")],
+                idfn=lambda _: "ação",
+                config=config,
             )
             assert result == [expected]
 
@@ -546,7 +549,10 @@ class TestMetafunc:
         ]
         for config, expected in values:
             result = idmaker(
-                ("a",), [pytest.param("string")], ids=["ação"], config=config,
+                ("a",),
+                [pytest.param("string")],
+                ids=["ação"],
+                config=config,
             )
             assert result == [expected]
 

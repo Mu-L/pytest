@@ -1,6 +1,7 @@
-.. image:: https://docs.pytest.org/en/stable/_static/pytest1.png
+.. image:: https://github.com/pytest-dev/pytest/raw/master/doc/en/img/pytest_logo_curves.svg
    :target: https://docs.pytest.org/en/stable/
    :align: center
+   :height: 200
    :alt: pytest
 
 
@@ -19,11 +20,12 @@
     :target: https://codecov.io/gh/pytest-dev/pytest
     :alt: Code coverage Status
 
-.. image:: https://travis-ci.org/pytest-dev/pytest.svg?branch=master
-    :target: https://travis-ci.org/pytest-dev/pytest
-
 .. image:: https://github.com/pytest-dev/pytest/workflows/main/badge.svg
     :target: https://github.com/pytest-dev/pytest/actions?query=workflow%3Amain
+
+.. image:: https://results.pre-commit.ci/badge/github/pytest-dev/pytest/master.svg
+   :target: https://results.pre-commit.ci/latest/github/pytest-dev/pytest/master
+   :alt: pre-commit.ci status
 
 .. image:: https://img.shields.io/badge/code%20style-black-000000.svg
     :target: https://github.com/psf/black
@@ -91,7 +93,7 @@ Features
 
 - Python 3.6+ and PyPy3
 
-- Rich plugin architecture, with over 850+ `external plugins <http://plugincompat.herokuapp.com>`_ and thriving community
+- Rich plugin architecture, with over 850+ `external plugins <https://docs.pytest.org/en/stable/plugin_list.html>`_ and thriving community
 
 
 Documentation

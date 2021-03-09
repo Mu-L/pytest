@@ -122,7 +122,7 @@ you can copy from:
 
 * a custom collection example plugin: :ref:`yaml plugin`
 * builtin plugins which provide pytest's own functionality
-* many `external plugins <http://plugincompat.herokuapp.com>`_ providing additional features
+* many :doc:`external plugins <plugin_list>` providing additional features
 
 All of these plugins implement :ref:`hooks <hook-reference>` and/or :ref:`fixtures <fixture>`
 to extend and add functionality.
@@ -337,7 +337,7 @@ testing directory:
 Alternatively you can invoke pytest with the ``-p pytester`` command line
 option.
 
-This will allow you to use the :py:class:`testdir <_pytest.pytester.Testdir>`
+This will allow you to use the :py:class:`pytester <_pytest.pytester.Pytester>`
 fixture for testing your plugin code.
 
 Let's demonstrate what you can do with the plugin with an example. Imagine we
@@ -374,17 +374,17 @@ string value of ``Hello World!`` if we do not supply a value or ``Hello
         return _hello
 
 
-Now the ``testdir`` fixture provides a convenient API for creating temporary
+Now the ``pytester`` fixture provides a convenient API for creating temporary
 ``conftest.py`` files and test files. It also allows us to run the tests and
 return a result object, with which we can assert the tests' outcomes.
 
 .. code-block:: python
 
-    def test_hello(testdir):
+    def test_hello(pytester):
         """Make sure that our plugin works."""
 
         # create a temporary conftest.py file
-        testdir.makeconftest(
+        pytester.makeconftest(
             """
             import pytest
 
@@ -399,7 +399,7 @@ return a result object, with which we can assert the tests' outcomes.
         )
 
         # create a temporary pytest test file
-        testdir.makepyfile(
+        pytester.makepyfile(
             """
             def test_hello_default(hello):
                 assert hello() == "Hello World!"
@@ -410,7 +410,7 @@ return a result object, with which we can assert the tests' outcomes.
         )
 
         # run all tests with pytest
-        result = testdir.runpytest()
+        result = pytester.runpytest()
 
         # check that all 4 tests passed
         result.assert_outcomes(passed=4)
@@ -430,9 +430,9 @@ Additionally it is possible to copy examples for an example folder before runnin
     # content of test_example.py
 
 
-    def test_plugin(testdir):
-        testdir.copy_example("test_example.py")
-        testdir.runpytest("-k", "test_example")
+    def test_plugin(pytester):
+        pytester.copy_example("test_example.py")
+        pytester.runpytest("-k", "test_example")
 
 
     def test_example():
@@ -762,8 +762,7 @@ declaring the hook functions directly in your plugin module, for example:
         """Simple plugin to defer pytest-xdist hook functions."""
 
         def pytest_testnodedown(self, node, error):
-            """standard xdist hook function.
-            """
+            """standard xdist hook function."""
 
 
     def pytest_configure(config):
